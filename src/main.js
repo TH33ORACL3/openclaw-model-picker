@@ -1,18 +1,24 @@
-import { loadConfig, saveConfig, loadState, saveState } from './api.js';
+import { loadConfig, saveConfig, loadState, saveState, loadCronJobs, saveCronJobs } from './api.js';
 import { state, update, subscribe } from './state.js';
-import { render, getChanges } from './render.js';
+import { render, getChanges, resetChanges } from './render.js';
 import { showToast } from './components/toast.js';
 import { groupModelsByProvider, mergeModels } from './utils/providers.js';
 import './style.css';
 
 async function init() {
   try {
-    const [configData, sidecarData] = await Promise.all([loadConfig(), loadState()]);
+    const [configData, sidecarData, cronData] = await Promise.all([
+      loadConfig(),
+      loadState(),
+      loadCronJobs().catch(() => ({ jobs: [] })),
+    ]);
 
     const agents = configData.agents?.list || [];
     const defaults = configData.agents?.defaults || {};
     const { allModels, modelsRegistry } = mergeModels(configData);
     const allProfiles = configData.auth?.profiles || {};
+
+    resetChanges();
 
     const defaultsModel = typeof defaults.model === 'string'
       ? { primary: defaults.model, fallbacks: [] }
@@ -26,6 +32,9 @@ async function init() {
       allProfiles,
       agents,
       defaultsModel,
+      cronJobs: cronData.jobs || [],
+      cronDefault: sidecarData.cronDefault || '',
+      cronJobUseDefaults: sidecarData.cronJobUseDefaults || {},
       dirty: false,
       saving: false,
       error: null,
@@ -38,15 +47,13 @@ async function init() {
   }
 }
 
-// Save button
 document.getElementById('btn-save').addEventListener('click', async () => {
   if (state.saving) return;
   update({ saving: true });
 
   try {
-    const { agentModels, agentAccountPrefs, defaultsAccountPrefs } = getChanges();
+    const { agentModels, agentAccountPrefs, defaultsAccountPrefs, cronJobModels, cronJobDefaultToggles } = getChanges();
 
-    // Build defaults model value
     const dm = state.defaultsModel;
     const defaultsModelValue = dm.fallbacks.length > 0
       ? { primary: dm.primary, fallbacks: dm.fallbacks }
@@ -57,7 +64,6 @@ document.getElementById('btn-save').addEventListener('click', async () => {
       defaultsModel: defaultsModelValue,
     });
 
-    // Save sidecar with account prefs
     const sidecar = state.sidecar || {};
     sidecar.agentAccounts = sidecar.agentAccounts || {};
     for (const [id, prefs] of Object.entries(agentAccountPrefs)) {
@@ -66,7 +72,31 @@ document.getElementById('btn-save').addEventListener('click', async () => {
     if (Object.keys(defaultsAccountPrefs).length > 0) {
       sidecar.defaultsAccounts = defaultsAccountPrefs;
     }
+    sidecar.cronDefault = state.cronDefault || '';
+    const mergedUseDefaults = { ...(state.cronJobUseDefaults || {}), ...cronJobDefaultToggles };
+    sidecar.cronJobUseDefaults = mergedUseDefaults;
     await saveState(sidecar);
+
+    const cronDefault = state.cronDefault;
+    const jobModelsToSave = [];
+
+    for (const [jobId, checked] of Object.entries(cronJobDefaultToggles)) {
+      if (checked && cronDefault) {
+        jobModelsToSave.push({ id: jobId, model: cronDefault });
+      }
+    }
+    for (const [jobId, model] of Object.entries(cronJobModels)) {
+      const isUsingDefault = cronJobDefaultToggles[jobId] !== undefined
+        ? cronJobDefaultToggles[jobId]
+        : !!mergedUseDefaults[jobId];
+      if (!isUsingDefault) {
+        jobModelsToSave.push({ id: jobId, model });
+      }
+    }
+
+    if (jobModelsToSave.length > 0) {
+      await saveCronJobs({ jobModels: jobModelsToSave });
+    }
 
     update({ saving: false, dirty: false, sidecar });
     showToast('Configuration saved');
@@ -76,17 +106,23 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   }
 });
 
-// Reload button
 document.getElementById('btn-reload').addEventListener('click', () => {
   init();
   showToast('Configuration reloaded', 'info');
 });
 
-// Update save button state
 subscribe((s) => {
   const btn = document.getElementById('btn-save');
   btn.disabled = !s.dirty || s.saving;
   btn.textContent = s.saving ? 'Saving...' : 'Save Changes';
+
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => {
+    const isAgents = item.querySelector('span').textContent.startsWith('Agents');
+    const isActive = (s.activeView === 'agents' && isAgents) || 
+                     (s.activeView === 'cron' && !isAgents);
+    item.classList.toggle('active', isActive);
+  });
 });
 
 init();

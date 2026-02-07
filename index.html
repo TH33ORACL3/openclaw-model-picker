@@ -10,17 +10,32 @@
   <div id="app">
     <header class="header">
       <div class="header-left">
-        <h1>OpenClaw Model Picker</h1>
-        <p class="subtitle">Per-agent model and account configuration</p>
+        <img src="/logo.png" alt="AZ Labs" class="header-logo" width="36" height="36">
+        <div>
+          <h1>OpenClaw Model Picker</h1>
+          <p class="subtitle">Per-agent model and account configuration</p>
+        </div>
       </div>
       <div class="header-actions">
         <button id="btn-reload" class="btn btn-secondary">Reload</button>
         <button id="btn-save" class="btn btn-primary" disabled>Save Changes</button>
       </div>
     </header>
-    <main id="content">
-      <div class="loading">Loading configuration...</div>
-    </main>
+    <div class="app-layout">
+      <nav id="sidebar" class="sidebar">
+        <!-- JS will populate this -->
+      </nav>
+      <main id="content">
+        <div class="loading">Loading configuration...</div>
+      </main>
+    </div>
+    <footer class="app-footer">
+      <span>Created by <a href="https://azlabs.ai" target="_blank" rel="noopener">AZ Labs</a></span>
+      <span class="footer-sep">&middot;</span>
+      <a href="https://github.com/TH33ORACL3/openclaw-model-picker" target="_blank" rel="noopener">GitHub</a>
+      <span class="footer-sep">&middot;</span>
+      <span>MIT License</span>
+    </footer>
     <div id="toast-container"></div>
   </div>
   <script type="module" src="/src/main.js"></script>

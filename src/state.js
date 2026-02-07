@@ -13,6 +13,11 @@ export const state = {
   providerProfiles: {},
   agents: [],
   defaultsModel: { primary: '', fallbacks: [] },
+  // Cron jobs
+  cronJobs: [],
+  cronDefault: '',
+  cronJobUseDefaults: {},
+  activeView: 'agents',
 };
 
 export function subscribe(fn) {
