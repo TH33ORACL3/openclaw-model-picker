@@ -1,5 +1,6 @@
 import { readConfig, writeConfig } from './config-io.js';
 import { readState, writeState } from './state-io.js';
+import { readCronJobs, writeCronJobs } from './cron-io.js';
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -84,6 +85,37 @@ export function modelPickerApi() {
           try {
             const body = await parseBody(req);
             const state = await writeState(body);
+            sendJson(res, { ok: true });
+          } catch (e) {
+            sendJson(res, { error: e.message }, 500);
+          }
+          return;
+        }
+
+        if (req.url === '/api/cron' && req.method === 'GET') {
+          try {
+            const data = await readCronJobs();
+            sendJson(res, data);
+          } catch (e) {
+            sendJson(res, { error: e.message }, 500);
+          }
+          return;
+        }
+
+        if (req.url === '/api/cron' && req.method === 'POST') {
+          try {
+            const body = await parseBody(req);
+            await writeCronJobs(current => {
+              if (body.jobModels) {
+                for (const { id, model } of body.jobModels) {
+                  const job = current.jobs.find(j => j.id === id);
+                  if (job && job.payload) {
+                    job.payload.model = model;
+                  }
+                }
+              }
+              return current;
+            });
             sendJson(res, { ok: true });
           } catch (e) {
             sendJson(res, { error: e.message }, 500);
