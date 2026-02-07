@@ -2,7 +2,7 @@ import { loadConfig, saveConfig, loadState, saveState } from './api.js';
 import { state, update, subscribe } from './state.js';
 import { render, getChanges } from './render.js';
 import { showToast } from './components/toast.js';
-import { groupModelsByProvider } from './utils/providers.js';
+import { groupModelsByProvider, mergeModels } from './utils/providers.js';
 import './style.css';
 
 async function init() {
@@ -11,8 +11,7 @@ async function init() {
 
     const agents = configData.agents?.list || [];
     const defaults = configData.agents?.defaults || {};
-    const modelsRegistry = defaults.models || {};
-    const allModels = Object.keys(modelsRegistry);
+    const { allModels, modelsRegistry } = mergeModels(configData);
     const allProfiles = configData.auth?.profiles || {};
 
     const defaultsModel = typeof defaults.model === 'string'

@@ -27,7 +27,8 @@ export function modelPickerApi() {
             const config = await readConfig();
             sendJson(res, {
               agents: config.agents,
-              auth: config.auth
+              auth: config.auth,
+              models: config.models
             });
           } catch (e) {
             sendJson(res, { error: e.message }, 500);
