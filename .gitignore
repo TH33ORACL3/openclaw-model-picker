@@ -4,4 +4,5 @@ model-picker-state.json
 *.tmp
 *.png
 !docs/*.png
+!public/*.png
 .DS_Store
