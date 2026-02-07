@@ -1,6 +1,6 @@
 # OpenClaw Model Picker
 
-A local web UI for configuring which AI models your [OpenClaw](https://github.com/nichochar/openclaw) agents and [ClawdBot](https://github.com/TH33ORACL3/clawdbot) cron jobs use. Manage global defaults, per-agent overrides, fallback chains, and cron job model assignments from a single dashboard instead of editing JSON by hand.
+A local web UI for configuring which AI models your [OpenClaw](https://github.com/nichochar/openclaw) agents and cron jobs use. Manage global defaults, per-agent overrides, fallback chains, and cron job model assignments from a single dashboard instead of editing JSON by hand.
 
 ![OpenClaw Model Picker](docs/screenshot.png)
 
@@ -47,7 +47,7 @@ Open [http://localhost:5199](http://localhost:5199) in your browser.
 - **Node.js** 18+
 - **pnpm** (or npm/yarn)
 - An existing [OpenClaw](https://github.com/nichochar/openclaw) installation with `~/.openclaw/openclaw.json`
-- *(Optional)* A [ClawdBot](https://github.com/TH33ORACL3/clawdbot) installation with `~/.clawdbot/cron/jobs.json` for cron job management
+- *(Optional)* An OpenClaw cron configuration at `~/.openclaw/cron/jobs.json` for cron job management
 
 ## How It Works
 
@@ -64,7 +64,7 @@ Vite Dev Server (plugin middleware)
         v
 ~/.openclaw/openclaw.json            <- agent config (models, agents, auth)
 ~/.openclaw/model-picker-state.json  <- UI state (account selections, cron defaults)
-~/.clawdbot/cron/jobs.json           <- cron job config (schedules, models, state)
+~/.openclaw/cron/jobs.json           <- cron job config (schedules, models, state)
 ```
 
 ### Save Behavior
@@ -176,7 +176,7 @@ model-picker/
 }
 ```
 
-### Cron Jobs (`~/.clawdbot/cron/jobs.json`)
+### Cron Jobs (`~/.openclaw/cron/jobs.json`)
 
 ```jsonc
 {
