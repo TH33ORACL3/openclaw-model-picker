@@ -1,0 +1,4 @@
+node_modules
+dist
+model-picker-state.json
+*.tmp
