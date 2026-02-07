@@ -1,6 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
 
-const STATE_PATH = '/Users/TH33_ORACL3/.openclaw/model-picker-state.json';
+const STATE_PATH = join(homedir(), '.openclaw', 'model-picker-state.json');
 
 export async function readState() {
   try {

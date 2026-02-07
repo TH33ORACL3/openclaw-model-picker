@@ -1,8 +1,9 @@
 import { readFile, writeFile, rename, unlink, access } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
+import { homedir } from 'node:os';
 import { randomBytes } from 'node:crypto';
 
-const CONFIG_PATH = '/Users/TH33_ORACL3/.openclaw/openclaw.json';
+const CONFIG_PATH = join(homedir(), '.openclaw', 'openclaw.json');
 const MAX_BACKUPS = 5;
 
 export async function readConfig() {

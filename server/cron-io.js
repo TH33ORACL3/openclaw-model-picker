@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { randomBytes } from 'node:crypto';
 
-const CRON_PATH = join(homedir(), '.clawdbot', 'cron', 'jobs.json');
+const CRON_PATH = join(homedir(), '.openclaw', 'cron', 'jobs.json');
 const MAX_BACKUPS = 3;
 
 export async function readCronJobs() {
