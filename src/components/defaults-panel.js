@@ -7,7 +7,7 @@ export function createDefaultsPanel(defaultsModel, sidecar, allModels, modelsReg
   panel.className = 'defaults-panel';
 
   const header = document.createElement('h2');
-  header.textContent = 'Global Defaults';
+  header.textContent = 'Agent Global Default';
   panel.appendChild(header);
 
   const desc = document.createElement('p');
