@@ -55,9 +55,7 @@ document.getElementById('btn-save').addEventListener('click', async () => {
     const { agentModels, agentAccountPrefs, defaultsAccountPrefs, cronJobModels, cronJobDefaultToggles } = getChanges();
 
     const dm = state.defaultsModel;
-    const defaultsModelValue = dm.fallbacks.length > 0
-      ? { primary: dm.primary, fallbacks: dm.fallbacks }
-      : dm.primary;
+    const defaultsModelValue = { primary: dm.primary, fallbacks: dm.fallbacks || [] };
 
     await saveConfig({
       agentModels,

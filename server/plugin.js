@@ -54,9 +54,21 @@ export function modelPickerApi() {
                   }
                 }
               }
-              // Update defaults model
+              // OpenClaw schema requires { primary: string, fallbacks: string[] }
               if (body.defaultsModel !== undefined) {
-                current.agents.defaults.model = body.defaultsModel;
+                if (typeof body.defaultsModel === 'string') {
+                  current.agents.defaults.model = {
+                    primary: body.defaultsModel,
+                    fallbacks: []
+                  };
+                } else {
+                  current.agents.defaults.model = {
+                    primary: body.defaultsModel.primary || '',
+                    fallbacks: Array.isArray(body.defaultsModel.fallbacks)
+                      ? body.defaultsModel.fallbacks
+                      : []
+                  };
+                }
               }
               // Update auth order
               if (body.authOrder !== undefined) {
