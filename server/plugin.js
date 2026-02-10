@@ -1,6 +1,7 @@
 import { readConfig, writeConfig } from './config-io.js';
 import { readState, writeState } from './state-io.js';
 import { readCronJobs, writeCronJobs } from './cron-io.js';
+import { reorderAuthProfiles } from './auth-profiles-io.js';
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -129,6 +130,26 @@ export function modelPickerApi() {
               return current;
             });
             sendJson(res, { ok: true });
+          } catch (e) {
+            sendJson(res, { error: e.message }, 500);
+          }
+          return;
+        }
+
+        if (req.url === '/api/auth-profiles' && req.method === 'POST') {
+          try {
+            const body = await parseBody(req);
+            // body: { agentOrders: { agentId: { provider: preferredProfileId } } }
+            const results = {};
+            for (const [agentId, providerOrders] of Object.entries(body.agentOrders || {})) {
+              try {
+                await reorderAuthProfiles(agentId, providerOrders);
+                results[agentId] = 'ok';
+              } catch (e) {
+                results[agentId] = e.message;
+              }
+            }
+            sendJson(res, { ok: true, results });
           } catch (e) {
             sendJson(res, { error: e.message }, 500);
           }

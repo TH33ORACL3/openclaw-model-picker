@@ -1,4 +1,4 @@
-import { loadConfig, saveConfig, loadState, saveState, loadCronJobs, saveCronJobs } from './api.js';
+import { loadConfig, saveConfig, loadState, saveState, loadCronJobs, saveCronJobs, saveAuthProfileOrder } from './api.js';
 import { state, update, subscribe } from './state.js';
 import { render, getChanges, resetChanges } from './render.js';
 import { showToast } from './components/toast.js';
@@ -75,6 +75,31 @@ document.getElementById('btn-save').addEventListener('click', async () => {
     sidecar.cronJobUseDefaults = mergedUseDefaults;
     await saveState(sidecar);
 
+    // Reorder auth-profiles.json for each agent based on account selections
+    const agentOrders = {};
+
+    // Defaults map to the "main" agent
+    if (defaultsAccountPrefs.primary) {
+      const profileProvider = defaultsAccountPrefs.primary.split(':')[0];
+      if (!agentOrders.main) agentOrders.main = {};
+      agentOrders.main[profileProvider] = defaultsAccountPrefs.primary;
+    }
+
+    for (const [agentId, prefs] of Object.entries(agentAccountPrefs)) {
+      if (prefs.primary) {
+        const profileProvider = prefs.primary.split(':')[0];
+        if (!agentOrders[agentId]) agentOrders[agentId] = {};
+        agentOrders[agentId][profileProvider] = prefs.primary;
+      }
+    }
+
+    const authProfilesChanged = Object.keys(agentOrders).length > 0;
+    if (authProfilesChanged) {
+      await saveAuthProfileOrder(agentOrders).catch(e => {
+        console.warn('Auth profile reorder partial failure:', e.message);
+      });
+    }
+
     const cronDefault = state.cronDefault;
     const jobModelsToSave = [];
 
@@ -97,7 +122,11 @@ document.getElementById('btn-save').addEventListener('click', async () => {
     }
 
     update({ saving: false, dirty: false, sidecar });
-    showToast('Configuration saved');
+    if (authProfilesChanged) {
+      showToast('Saved. Account changes take effect on new sessions.', 'info');
+    } else {
+      showToast('Configuration saved');
+    }
   } catch (e) {
     update({ saving: false });
     showToast(`Save failed: ${e.message}`, 'error');

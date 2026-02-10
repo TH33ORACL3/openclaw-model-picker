@@ -45,3 +45,13 @@ export async function saveCronJobs(payload) {
   if (!res.ok) throw new Error(`Failed to save cron jobs: ${res.status}`);
   return res.json();
 }
+
+export async function saveAuthProfileOrder(agentOrders) {
+  const res = await fetch('/api/auth-profiles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agentOrders }),
+  });
+  if (!res.ok) throw new Error(`Failed to save auth profile order: ${res.status}`);
+  return res.json();
+}
